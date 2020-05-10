@@ -1,0 +1,132 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+}
+
+h1 {
+  margin: 10px;
+}
+
+.profileImg {
+  vertical-align: middle;
+  display: inline;
+}
+
+.accountBox {
+  display: inline-block;
+  height: 100%;
+  margin-left: 10px;
+}
+
+.accountName {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  text-align: center;
+}
+
+
+.toggleBox {
+  display: inline-block;
+  color: #000000;
+  background-color: #FFFFFF;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border: 1px solid #000000;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  text-align: center;
+  word-wrap: break-word;
+  min-width: 88px;
+  cursor: pointer;
+}
+
+.toggleBoxOff {
+  color: #FFFFFF;
+  background-color: #000000;
+  text-decoration: line-through;
+}
+
+.followsBox {
+  background-color: rgb(230, 236, 240);
+  border: 0 solid black;
+}
+
+.followsText {
+  color: rgb(101, 119, 134); /* grey text */
+}
+
+.nonfollowerText {
+  color: rgb(200, 119, 134); /* red text */
+  text-decoration: line-through;
+}
+
+.nonfollowerBox {
+  background-color: rgb(255, 200, 210);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Flex table                                                               */
+/* ------------------------------------------------------------------------ */
+
+.table {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  margin: 10px auto;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  padding: 5px 5px;
+}
+
+.cell {
+  border: solid 1px lightgrey;
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 15px;
+  word-wrap: break-word;
+}
+
+.accountCol {
+  flex-grow: 0;
+  min-width: 25%;
+  max-width: 25%;
+}
+
+.col1 {
+  flex-grow: 1;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Buttons    */
+/* ------------------------------------------------------------------------ */
+
+.btn:link,
+.btn:visited {
+  color: #fff;
+  display: inline-block;
+  padding: 10px 30px;
+  /* get rid of underline */
+  text-decoration: none;
+  border-radius: 200px;
+  background-color: #e67e22;
+  margin: 15px auto;
+}
+
+.btn:hover,
+.btn:active {
+  background-color: #cf8d17;
+}
