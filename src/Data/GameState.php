@@ -6,6 +6,9 @@ namespace App\Data;
 
 class GameState
 {
+    // TODO cache this too
+    private static $words = ['RABBIT', 'BUNNY', 'CARROT', 'LETTUCE', 'BURROW', 'FLUFFY', 'FLOPPY', 'LITTER', 'PELLETS'];
+
     private static $cache;
 
     protected $key;
@@ -31,6 +34,21 @@ class GameState
 
         // create mapping from the key to this state
         self::cacheState();
+    }
+
+    public static function newGame() : GameState
+    {
+        if (!empty(self::$words)) {
+            // randomly select a word
+            $selected = array_rand(self::$words);
+            $word = self::$words[$selected];
+
+            // remove word so it can't be used in the future
+            unset(self::$words[$selected]);
+
+            return new GameState($word);
+        }
+        throw new Exception("Sorry. We ran out of new words.");
     }
 
     public static function getGameState($game_state_key)
@@ -212,16 +230,5 @@ class GameState
     public function allLettersGuessed()
     {
         return strpos($this->getWordMask(), GameConstants::SPACER) === false;
-    }
-
-    public function jsonSerialize() {
-        return [
-            'key' => $this->getKey(),
-            'word' => $this->word,
-            'wordMask' => $this->wordMask,
-            'guessedLetters' => $this->guessedLetters,
-            'wordGuess' => $this->wordGuess,
-            'previousState' => $this->previousState,
-        ];
     }
 }

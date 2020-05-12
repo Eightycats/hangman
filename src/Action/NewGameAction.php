@@ -3,7 +3,6 @@
 namespace App\Action;
 
 use App\Data\GameState;
-use App\Data\Hangman;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
@@ -14,6 +13,6 @@ class NewGameAction extends RedirectAction
      */
     protected function invoke(ServerRequest $request, Response $response, $args, $game_state)
     {
-        return Hangman::newGame();
+        return GameState::newGame();
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Action;
 
-use App\Data\GameState;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
