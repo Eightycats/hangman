@@ -28,8 +28,8 @@ class GameState
     {
         $this->key = self::generateKey();
         $this->word = $word;
-        // create empty "mask" with same length as word
-        $this->wordMask = str_repeat(GameConstants::SPACER, strlen($word));
+        $this->wordMask = "";
+        $this->makeMask();
         $this->wordGuess = null;
 
         // create mapping from the key to this state
@@ -40,15 +40,41 @@ class GameState
     {
         if (!empty(self::$words)) {
             // randomly select a word
-            $selected = array_rand(self::$words);
-            $word = self::$words[$selected];
+            $selected_index = array_rand(self::$words);
+            $word = self::$words[$selected_index];
 
             // remove word so it can't be used in the future
-            unset(self::$words[$selected]);
+            unset(self::$words[$selected_index]);
 
             return new GameState($word);
         }
         throw new Exception("Sorry. We ran out of new words.");
+    }
+
+    protected function clone ()
+    {
+        $copy = new GameState($this->word);
+        // copied by value
+        $copy->guessedLetters = $this->guessedLetters;
+        $copy->wordGuess = $this->wordGuess;
+        $copy->previousState = $this->getKey();
+
+        return $copy;
+    }
+
+    protected function makeMask ()
+    {
+        // generate word "mask" containing letters guessed so far
+        $mask = "";
+        for ($i = 0; $i < strlen($this->word); $i++) {
+            $c = $this->word[$i];
+            if ($this->hasGuessedLetter($c)) {
+                $mask[$i] = $c;
+            } else {
+                $mask[$i] = GameConstants::SPACER;
+            }
+        }
+        $this->wordMask = $mask;
     }
 
     public static function getGameState($game_state_key)
@@ -166,25 +192,13 @@ class GameState
             return $this;
         }
 
-        $next = new GameState($this->word);
-        // copied by value
-        $next->guessedLetters = $this->guessedLetters;
+        $next = $this->clone();
+
         // add new letter to beginning of array
         array_unshift($next->guessedLetters, $letter);
 
-        // generate word "mask" containing letters guessed so far
-        $mask = "";
-        for ($i = 0; $i < strlen($next->word); $i++) {
-            $c = $next->word[$i];
-            if ($next->hasGuessedLetter($c)) {
-                $mask[$i] = $c;
-            } else {
-                $mask[$i] = GameConstants::SPACER;
-            }
-        }
-        $next->wordMask = $mask;
-
-        $next->previousState = $this->getKey();
+        // update the m_a_s_k
+        $next->makeMask();
 
         $next->cacheState();
 
@@ -199,8 +213,12 @@ class GameState
     public function guessWord($word_guess)
     {
         if (!$this->isGameOver()) {
-            $this->wordGuess = strtoupper($word_guess);
+            $copy = $this->clone();
+            $copy->wordGuess = strtoupper($word_guess);
+            $copy->saveCache();
+            return $copy;
         }
+        // game is already over. return the current state unchanged.
         return $this;
     }
 
@@ -225,7 +243,7 @@ class GameState
     }
 
     /**
-     * Checks whether we've guessed all the letters correctly.
+     * Checks whether we've already guessed all the letters correctly.
      */
     public function allLettersGuessed()
     {
