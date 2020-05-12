@@ -2,8 +2,6 @@
 
 namespace App\View;
 
-use App\Data\GameState;
-
 class GameView
 {
     private $templateFile;
@@ -20,9 +18,6 @@ class GameView
 
         // start writing to an output buffer
         ob_start();
-
-        // extract values so they can be referenced in the template
-
 
         // read and populate the template
         include $this->templateFile;
