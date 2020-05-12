@@ -6,22 +6,28 @@ namespace App\Data;
 
 class GameState
 {
-    // TODO cache this too
-    private static $words = ['RABBIT', 'BUNNY', 'CARROT', 'LETTUCE', 'BURROW', 'FLUFFY', 'FLOPPY', 'LITTER', 'PELLETS'];
+    /** The set of available words. */
+    private static $words;
 
+    /** Cache to maintain state between calls. */
     private static $cache;
 
+    /** ID to uniquely identify this state. */
     protected $key;
 
     /** The target word. */
     protected String $word;
 
+    /** Target word with underscores for missing letters. */
     protected String $wordMask;
 
+    /** Letters guessed so far. */
     protected array $guessedLetters = [];
 
+    /** Word guessed by player. If this is set, the game is over. */
     protected $wordGuess;
 
+    /** Key for the state that came before this one, if any. */
     protected $previousState;
 
     function __construct($word)
@@ -38,17 +44,26 @@ class GameState
 
     public static function newGame() : GameState
     {
-        if (!empty(self::$words)) {
+        return new GameState(self::nextWord());
+    }
+
+    public static function nextWord()
+    {
+        $cache = self::getCache();
+
+        if (!empty($cache->words)) {
             // randomly select a word
-            $selected_index = array_rand(self::$words);
-            $word = self::$words[$selected_index];
+            $selected_index = array_rand($cache->words);
+            $word = $cache->words[$selected_index];
 
             // remove word so it can't be used in the future
-            unset(self::$words[$selected_index]);
+            unset($cache->words[$selected_index]);
 
-            return new GameState($word);
+            self::saveCache();
+
+            return $word;
         }
-        throw new Exception("Sorry. We ran out of new words.");
+        throw new \Exception("Sorry. We ran out of new words.");
     }
 
     protected function clone ()
@@ -103,17 +118,17 @@ class GameState
     private static function getCache()
     {
         if (!isset(self::$cache)) {
-            if (file_exists("cache.txt")) {
-                $cache = fopen("cache.txt", "r");
-                $serial = fread($cache, filesize("cache.txt"));
+            if (file_exists(GameConstants::CACHE)) {
+                $cache = fopen(GameConstants::CACHE, "r");
+                $serial = fread($cache, filesize(GameConstants::CACHE));
                 fclose($cache);
                 self::$cache = unserialize($serial);
             } else {
                 self::$cache = new \stdClass();
                 self::$cache->keyCounter = 0;
                 self::$cache->stateMap = new \stdClass();
+                self::resetWords();
             }
-
         }
         return self::$cache;
     }
@@ -121,7 +136,7 @@ class GameState
     private static function saveCache()
     {
         $serial = serialize(self::$cache);
-        $cache = fopen("cache.txt", "w");
+        $cache = fopen(GameConstants::CACHE, "w");
         fwrite($cache, $serial);
         fclose($cache);
     }
@@ -184,7 +199,7 @@ class GameState
 
         // check if letter is valid
         if (!in_array($letter, range('A', 'Z'))) {
-            throw new \Exception("Bad letter: " . $letter);
+            return $this;
         }
 
         // check if letter has already been guessed
@@ -248,5 +263,18 @@ class GameState
     public function allLettersGuessed()
     {
         return strpos($this->getWordMask(), GameConstants::SPACER) === false;
+    }
+
+    public static function hasMoreWords()
+    {
+        return !empty(self::getCache()->words);
+    }
+
+    /** Reset the list of words. */
+    public static function resetWords()
+    {
+        $cache = self::getCache();
+        $cache->words = GameConstants::WORDS;
+        self::saveCache();
     }
 }

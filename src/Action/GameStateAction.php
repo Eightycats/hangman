@@ -22,8 +22,9 @@ abstract class GameStateAction
 
             // callout to do the specific action
             $game_state = $this->invoke($request, $response, $args, $game_state);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $error = $ex->getMessage();
+            error_log("EXCEPTION: " . $error);
         }
 
         return $this->display($response, $game_state, $error);

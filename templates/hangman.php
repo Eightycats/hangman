@@ -19,6 +19,8 @@
             $mask = $game_over ? $game_state->getWord() : $game_state->getWordMask();
         }
 
+        $more_words = \App\Data\GameState::hasMoreWords();
+
         $image = '/rsrc/img/' . $guess_count . '.png';
 ?>
 
@@ -114,7 +116,17 @@
         if (!$game_exists || $game_over) {
     ?>
             <div class="new_container">
-                <a href="/new" class="btn new_game">New Game</a>
+                <?php
+                    if ($more_words) {
+                ?>
+                        <a href="/new" class="btn new_game">New Game</a>
+                <?php
+                    } else {
+                 ?>
+                        <p class="message">Sorry. No more words left.</p>
+                <?php
+                    }
+                ?>
             </div>
     <?php
         }
