@@ -1,16 +1,13 @@
 <?php
 
-
 namespace App\Action;
-
 
 use App\Data\GameState;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
-class RedirectAction extends BaseAction
+class RedirectAction extends GameStateAction
 {
-
     public function __invoke(ServerRequest $request, Response $response, $args): Response
     {
         $game_state = $this->getGameState($args);
@@ -36,15 +33,14 @@ class RedirectAction extends BaseAction
 
     protected function display(Response $response, GameState $game_state) : Response
     {
-        $response->withRedirect(self::getDisplayURL($game_state));
-        return $response;
+        return $response->withRedirect(self::getDisplayURL($game_state));
     }
 
     public static function getDisplayURL(GameState $game_state)
     {
         $key = $game_state->getKey();
         if (isset($key)) {
-            return "/display/" . key;
+            return "/display/" . $key;
         }
     }
 }

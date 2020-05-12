@@ -3,43 +3,84 @@
 
 namespace App\Data;
 
-class GameState
+use JsonSerializable;
+
+class GameState implements JsonSerializable
 {
-    const MAX_GUESSES = 8;
+    private static $cache;
 
-    const SPACER = '_';
-
-    private static int $key_counter = 0;
-
-    private static array $state_map = [];
-
-    private int $key;
+    protected $key;
 
     /** The target word. */
-    private String $word;
+    protected String $word;
 
-    private array $guessedLetters = [];
+    protected String $wordMask;
 
-    private String $wordGuess;
+    protected array $guessedLetters = [];
 
-    private String $wordMask;
+    protected $wordGuess;
 
-    private GameState $previousState;
+    protected $previousState;
 
     function __construct($word)
     {
-        $this->key = self::$key_counter++;
+        $this->key = self::generateKey();
         $this->word = $word;
         // create empty "mask" with same length as word
-        $this->wordMask = str_repeat(GameState::SPACER, strlen($word));
+        $this->wordMask = str_repeat(GameConstants::SPACER, strlen($word));
+        $this->wordGuess = null;
 
-        // create mapping of from the key to this state
-        self::$state_map[$this->key] = $this;
+        // create mapping from the key to this state
+        self::cacheState();
     }
 
-    public static function getGameState($game_state_key) : GameState
+    public static function getGameState($game_state_key)
     {
-        return isset(self::$state_map[$game_state_key]) ? self::$state_map[$game_state_key] : null;
+        $map = self::getStateMap();
+        return isset($map->{$game_state_key}) ? $map->{$game_state_key} : null;
+    }
+
+    private static function getStateMap()
+    {
+        return self::getCache()->stateMap;
+    }
+
+    private function cacheState()
+    {
+        self::getStateMap()->{$this->getKey()} = $this;
+        self::saveCache();
+    }
+
+    private static function generateKey()
+    {
+        $cache = self::getCache();
+        return strval(++$cache->keyCounter);
+    }
+
+    private static function getCache()
+    {
+        if (!isset(self::$cache)) {
+            if (file_exists("cache.txt")) {
+                $cache = fopen("cache.txt", "r");
+                $serial = fread($cache, filesize("cache.txt"));
+                fclose($cache);
+                self::$cache = unserialize($serial);
+            } else {
+                self::$cache = new \stdClass();
+                self::$cache->keyCounter = 0;
+                self::$cache->stateMap = new \stdClass();
+            }
+
+        }
+        return self::$cache;
+    }
+
+    private static function saveCache()
+    {
+        $serial = serialize(self::$cache);
+        $cache = fopen("cache.txt", "w");
+        fwrite($cache, $serial);
+        fclose($cache);
     }
 
     public function getKey()
@@ -47,9 +88,19 @@ class GameState
         return $this->key;
     }
 
+    public function getWord()
+    {
+        return $this->word;
+    }
+
     public function getGuessCount()
     {
         return count($this->guessedLetters);
+    }
+
+    public function getRemainingGuesses()
+    {
+        return GameConstants::MAX_GUESSES - $this->getGuessCount();
     }
 
     /**
@@ -57,10 +108,6 @@ class GameState
      */
     public function getWordMask()
     {
-        if ($this->isGameOver()) {
-            // show them the full answer
-            return $this->word;
-        }
         return $this->wordMask;
     }
 
@@ -74,7 +121,7 @@ class GameState
      */
     public function getPreviousStateKey()
     {
-        return $this->hasPreviousState() ? $this->previousState : null;
+        return $this->previousState;
     }
 
     public function guessLetter($letter) : GameState
@@ -82,13 +129,23 @@ class GameState
         if ($this->isGameOver()) {
             return $this;
         }
-        // TODO check if letter is valid
+
+        // trim any whitespace
+        $letter = trim($letter);
+
+        // only one letter allowed
+        $letter = $letter[0];
 
         // normalize to all uppercase letters
         $letter = strtoupper($letter);
 
+        // check if letter is valid
+        if (!in_array($letter, range('A', 'Z'))) {
+            throw new \Exception("Bad letter: " . $letter);
+        }
+
         // check if letter has already been guessed
-        if ($this->hasAlreadyGuessed($letter)) {
+        if ($this->hasGuessedLetter($letter)) {
             return $this;
         }
 
@@ -102,20 +159,22 @@ class GameState
         $mask = "";
         for ($i = 0; $i < strlen($next->word); $i++) {
             $c = $next->word[$i];
-            if ($next->hasAlreadyGuessed($c)) {
+            if ($next->hasGuessedLetter($c)) {
                 $mask[$i] = $c;
             } else {
-                $mask[$i] = GameState::SPACER;
+                $mask[$i] = GameConstants::SPACER;
             }
         }
         $next->wordMask = $mask;
 
-        $next->previousState -> $this;
+        $next->previousState = $this->getKey();
+
+        $next->cacheState();
 
         return $next;
     }
 
-    public function hasAlreadyGuessed($letter)
+    public function hasGuessedLetter($letter)
     {
         return in_array($letter, $this->guessedLetters);
     }
@@ -140,13 +199,12 @@ class GameState
 
     public function isLose()
     {
-        return $this->getGuessCount() >= GameState::MAX_GUESSES ||
-            (isset($this->wordGuess) && !$this->isGuessCorrect());
+        return $this->getRemainingGuesses() <= 0 ||  (isset($this->wordGuess) && !$this->isGuessCorrect());
     }
 
     public function isGuessCorrect()
     {
-        return $this->word === $this->wordGuess;
+        return $this->word == $this->wordGuess;
     }
 
     /**
@@ -154,6 +212,17 @@ class GameState
      */
     public function allLettersGuessed()
     {
-        return strpos(!$this->getWordMask(), GameState::SPACER) === false;
+        return strpos($this->getWordMask(), GameConstants::SPACER) === false;
+    }
+
+    public function jsonSerialize() {
+        return [
+            'key' => $this->getKey(),
+            'word' => $this->word,
+            'wordMask' => $this->wordMask,
+            'guessedLetters' => $this->guessedLetters,
+            'wordGuess' => $this->wordGuess,
+            'previousState' => $this->previousState,
+        ];
     }
 }

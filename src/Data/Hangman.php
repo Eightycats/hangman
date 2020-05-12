@@ -6,6 +6,7 @@ namespace App\Data;
 
 class Hangman
 {
+    // TODO cache this too
     private static $words = ['RABBIT', 'BUNNY', 'CARROT', 'LETTUCE', 'BURROW', 'FLUFFY', 'FLOPPY', 'LITTER', 'PELLETS'];
 
     public static function newGame() : GameState
@@ -20,6 +21,6 @@ class Hangman
 
             return new GameState($word);
         }
-        throw new Exception("Sorry. No more new words.");
+        throw new Exception("Sorry. Ran out of new words.");
     }
 }

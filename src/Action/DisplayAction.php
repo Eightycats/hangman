@@ -2,32 +2,20 @@
 
 namespace App\Action;
 
-use App\Data\Hangman;
 use Slim\Http\Response;
-use Slim\Http\ServerRequest;
 
-class DisplayAction extends TemplateAction
+class DisplayAction extends GameViewAction
 {
-    public function __invoke(ServerRequest $request, Response $response, $args): Response
+    public function invoke(Response $response, $args)
     {
         $game_state = $this->getGameState($args);
 
         // check if we were unable to find a state with that key, perhaps because of server restart
-        if (empty($game_state)) {
-            // redirect to the home page to start a new game
-            $response->withRedirect("/");
-            return $response;
+        if (!isset($game_state)) {
+            // redirect to the home page where they can start a new game
+            return $response->withRedirect("/");
         }
 
-        $content = [
-            'game_state' => $game_state
-        ];
-
-        return $this->writeResponse($response, $content);
-    }
-
-    protected function getTemplate()
-    {
-        return 'hangman';
+        return $game_state;
     }
 }

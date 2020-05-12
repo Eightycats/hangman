@@ -5,7 +5,7 @@ error_reporting(0);
 ini_set('display_errors', '0');
 
 // Timezone
-date_default_timezone_set('Europe/Berlin');
+date_default_timezone_set('America/Los_Angeles');
 
 // Settings
 $settings = [];

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Action;
-
 
 use App\Data\GameState;
 use Slim\Http\Response;
