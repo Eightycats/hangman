@@ -45,7 +45,7 @@
                     if ($win) {
                         echo "YOU WIN!";
                     } else if ($lose) {
-                        echo "Sorry, You Lose.";
+                        echo "Sorry. You Lose.";
                     }
                 }
             ?>
@@ -97,6 +97,15 @@
                         echo "</span>";
                     }
                 }
+
+                if (!$game_exists || $game_state->hasPreviousState()) {
+                    $back = "/display/" . $game_state->getPreviousStateKey();
+            ?>
+                    <span class="letter_box">
+                        <a href="<?php echo $back; ?>" class="btn letter undo">Undo</a>
+                    </div>
+            <?php
+                }
             ?>
         </div>
     <?php
@@ -107,6 +116,20 @@
             <div class="new_container">
                 <a href="/new" class="btn new_game">New Game</a>
             </div>
+    <?php
+        }
+
+        if ($game_exists && !$game_over) {
+            $guess_uri = "/guess_word/$key";
+    ?>
+
+        <form action="<?php echo $guess_uri; ?>" method="POST">
+            <div class="guess">
+                <input id="guess" class="input">
+                <input type="submit" class="btn" value="Guess Word">
+            </div>
+        </form>
+
     <?php
         }
     ?>

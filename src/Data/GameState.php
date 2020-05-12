@@ -3,9 +3,8 @@
 
 namespace App\Data;
 
-use JsonSerializable;
 
-class GameState implements JsonSerializable
+class GameState
 {
     private static $cache;
 
@@ -179,12 +178,12 @@ class GameState implements JsonSerializable
         return in_array($letter, $this->guessedLetters);
     }
 
-    public function setWordGuess($word_guess)
+    public function guessWord($word_guess)
     {
         if (!$this->isGameOver()) {
-            $this->wordGuess = $word_guess;
+            $this->wordGuess = strtoupper($word_guess);
         }
-        return $this->isWin();
+        return $this;
     }
 
     public function isGameOver()

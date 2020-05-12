@@ -4,19 +4,16 @@ namespace App\Action;
 
 use App\Data\GameState;
 use App\Data\Hangman;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest;
 
 class NewGameAction extends RedirectAction
 {
     /**
      * Overridden to create new game.
      */
-    protected function getGameState($args) : GameState
+    protected function invoke(ServerRequest $request, Response $response, $args, $game_state)
     {
-        try {
-            return Hangman::newGame();
-        } catch (Exception $ex) {
-            // TODO where to go with errors?
-        }
-        return null;
+        return Hangman::newGame();
     }
 }

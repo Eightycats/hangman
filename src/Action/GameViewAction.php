@@ -2,10 +2,10 @@
 
 namespace App\Action;
 
+use App\Data\GameState;
 use App\View\GameView;
 use Selective\Config\Configuration;
 use Slim\Http\Response;
-use Slim\Http\ServerRequest;
 
 class GameViewAction extends GameStateAction
 {
@@ -16,31 +16,11 @@ class GameViewAction extends GameStateAction
         $this->settings = $settings;
     }
 
-    public function __invoke(ServerRequest $request, Response $response, $args): Response
+    protected function display(Response $response, $game_state, $error): Response
     {
-        $game_state = null;
-        $error = false;
-
-        try {
-            $game_state = $this->invoke($response, $args);
-        } catch (Exception $ex) {
-            $error = $ex->getMessage();
-        }
-
-        $view = new GameView($this->settings->getString('templates') . '/' . $this->getTemplate() . '.php');
+        $view = new GameView($this->settings->getString('templates') . '/hangman.php');
         $response->getBody()->write($view->render($game_state, $error));
 
         return $response;
-    }
-
-    protected function invoke(Response $response, $args)
-    {
-        return null;
-    }
-
-    protected function getTemplate()
-    {
-        // show hangman.php
-        return 'hangman';
     }
 }
