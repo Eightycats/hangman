@@ -15,4 +15,10 @@ class NewGameAction extends RedirectAction
     {
         return GameState::newGame();
     }
+
+    protected function display(Response $response, $game_state, $error) : Response
+    {
+        $response = parent::display($response, $game_state, $error);
+        return $response->withHeader('Cache-Control', 'no-store');
+    }
 }

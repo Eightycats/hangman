@@ -137,7 +137,7 @@
 
         <form action="<?php echo $guess_uri; ?>" method="POST">
             <div class="guess">
-                <input type="text" id="guess" name="guess" class="guess_input" autocomplete="off">
+                <input type="text" id="guess" name="guess" class="guess_input" autocomplete="off" maxlength="40">
                 <input type="submit" class="btn" value="Guess Word">
             </div>
         </form>
